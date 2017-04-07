@@ -119,7 +119,7 @@ public class JournalArticleFinderImpl
 			titles = CustomSQLUtil.keywords(keywords);
 			descriptions = CustomSQLUtil.keywords(keywords, false);
 
-			if (isdatabaseContentKeywordSearchEnabled(companyId)) {
+			if (isDatabaseContentKeywordSearchEnabled(companyId)) {
 				contents = CustomSQLUtil.keywords(keywords, false);
 			}
 		}
@@ -242,7 +242,7 @@ public class JournalArticleFinderImpl
 			titles = CustomSQLUtil.keywords(keywords);
 			descriptions = CustomSQLUtil.keywords(keywords, false);
 
-			if (isdatabaseContentKeywordSearchEnabled(companyId)) {
+			if (isDatabaseContentKeywordSearchEnabled(companyId)) {
 				contents = CustomSQLUtil.keywords(keywords, false);
 			}
 		}
@@ -366,7 +366,7 @@ public class JournalArticleFinderImpl
 			titles = CustomSQLUtil.keywords(keywords);
 			descriptions = CustomSQLUtil.keywords(keywords, false);
 
-			if (isdatabaseContentKeywordSearchEnabled(companyId)) {
+			if (isDatabaseContentKeywordSearchEnabled(companyId)) {
 				contents = CustomSQLUtil.keywords(keywords, false);
 			}
 		}
@@ -536,7 +536,7 @@ public class JournalArticleFinderImpl
 			titles = CustomSQLUtil.keywords(keywords);
 			descriptions = CustomSQLUtil.keywords(keywords, false);
 
-			if (isdatabaseContentKeywordSearchEnabled(companyId)) {
+			if (isDatabaseContentKeywordSearchEnabled(companyId)) {
 				contents = CustomSQLUtil.keywords(keywords, false);
 			}
 		}
@@ -1540,7 +1540,7 @@ public class JournalArticleFinderImpl
 		return articles.get(0);
 	}
 
-	protected boolean isdatabaseContentKeywordSearchEnabled(long companyId) {
+	protected boolean isDatabaseContentKeywordSearchEnabled(long companyId) {
 		JournalServiceConfiguration journalServiceConfiguration = null;
 
 		try {
