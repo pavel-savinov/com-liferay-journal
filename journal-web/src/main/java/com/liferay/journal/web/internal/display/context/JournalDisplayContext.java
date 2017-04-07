@@ -116,6 +116,10 @@ public class JournalDisplayContext {
 		LiferayPortletResponse liferayPortletResponse,
 		PortletPreferences portletPreferences) {
 
+		_journalWebConfiguration =
+			(JournalWebConfiguration)request.getAttribute(
+				JournalWebConfiguration.class.getName());
+
 		_request = request;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
@@ -443,7 +447,7 @@ public class JournalDisplayContext {
 			return _keywords;
 		}
 
-		_keywords = ParamUtil.getString(_request, "keywords");
+		_keywords = _escapeKeywords(ParamUtil.getString(_request, "keywords"));
 
 		return _keywords;
 	}
@@ -1306,6 +1310,28 @@ public class JournalDisplayContext {
 			portletURL.toString());
 	}
 
+	private String _escapeKeywords(String keywords) {
+		if (_journalWebConfiguration.journalArticlesSearchWithIndex() ||
+			Validator.isNull(keywords)) {
+
+			return keywords;
+		}
+
+		String unquotedKeywords = StringUtil.unquote(keywords);
+
+		boolean quoted = !Objects.equals(keywords, unquotedKeywords);
+
+		char quoteChar = keywords.charAt(0);
+
+		keywords = HtmlUtil.escape(unquotedKeywords);
+
+		if (quoted) {
+			return StringUtil.quote(keywords, quoteChar);
+		}
+
+		return keywords;
+	}
+
 	private JSONArray _getFoldersJSONArray(long groupId, long folderId)
 		throws Exception {
 
@@ -1352,6 +1378,7 @@ public class JournalDisplayContext {
 	private String[] _displayViews;
 	private JournalFolder _folder;
 	private Long _folderId;
+	private final JournalWebConfiguration _journalWebConfiguration;
 	private String _keywords;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
