@@ -76,6 +76,10 @@ public class UpgradeImageTypeContent extends UpgradeProcess {
 			for (Element dynamicContentEl : dynamicContentEls) {
 				String id = dynamicContentEl.attributeValue("id");
 
+				if (id == null) {
+					continue;
+				}
+
 				long folderId = getFolderId(userId, groupId, resourcePrimKey);
 
 				FileEntry fileEntry = getFileEntry(groupId, folderId, id);
@@ -144,6 +148,10 @@ public class UpgradeImageTypeContent extends UpgradeProcess {
 					}
 
 					Image image = _imageLocalService.getImage(articleImageId);
+
+					if (image == null) {
+						continue;
+					}
 
 					PortletFileRepositoryUtil.addPortletFileEntry(
 						groupId, userId, JournalArticle.class.getName(),
