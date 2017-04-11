@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Node;
@@ -76,7 +77,7 @@ public class UpgradeImageTypeContent extends UpgradeProcess {
 			for (Element dynamicContentEl : dynamicContentEls) {
 				String id = dynamicContentEl.attributeValue("id");
 
-				if (id == null) {
+				if (Validator.isNull(id)) {
 					continue;
 				}
 
