@@ -11,6 +11,8 @@ AUI.add(
 
 		var STR_DESCRIPTION_INPUT_LOCALIZED = 'descriptionInputLocalized';
 
+		var STR_PUBLISH_BUTTON = "publishButton";
+
 		var STR_SELECT_STRUCTURE = 'selectStructure';
 
 		var STR_SELECT_TEMPLATE = 'selectTemplate';
@@ -41,6 +43,10 @@ AUI.add(
 					},
 
 					editTemplate: {
+						setter: A.one
+					},
+
+					publishButton: {
 						setter: A.one
 					},
 
@@ -129,6 +135,78 @@ AUI.add(
 						titleInputLocalized.selectFlag(editingLocale);
 					},
 
+					_beforePublishButtonClick: function() {
+						var instance = this;
+
+						var form = Liferay.Form.get(instance._getPrincipalForm().get('id'));
+
+						var formValidator = form.formValidator;
+
+						var validatorEventHandles = formValidator.eventHandles;
+
+						if (!validatorEventHandles) {
+							validatorEventHandles = [];
+						}
+
+						(new A.EventHandle(validatorEventHandles)).detach();
+
+						var titleInputLocalized = instance.get(STR_TITLE_INPUT_LOCALIZED);
+
+						var titleInputLocalizedName = instance.ns(titleInputLocalized.get('name'));
+
+						var inputLanguageFieldName = instance.ns(titleInputLocalized.get('name') + '_' + titleInputLocalized.getSelectedLanguageId());
+
+						var originalValidateField = formValidator.validateField;
+
+						if (!formValidator.originalValidateField) {
+							formValidator.validateField = function(field) {
+								var fieldName = Lang.isString(field) ? field : field.get('id');
+
+								if (fieldName === titleInputLocalizedName) {
+									fieldName = inputLanguageFieldName;
+								}
+
+								return originalValidateField.bind(formValidator)(fieldName);
+							};
+
+							formValidator.originalValidateField = originalValidateField;
+						}
+
+						validatorEventHandles.push(
+							formValidator.on(
+								'errorField',
+								function(data) {
+									var fieldName = Lang.isString(data.validator.field) ? data.validator.field : data.validator.field.get('id');
+
+									if (fieldName === inputLanguageFieldName) {
+										var boundingBox = titleInputLocalized.get('boundingBox');
+
+										boundingBox.addClass('has-error');
+									}
+								}
+							)
+						);
+
+						validatorEventHandles.push(
+							formValidator.on(
+								'validField',
+								function(data) {
+									var fieldName = Lang.isString(data.validator.field) ? data.validator.field : data.validator.field.get('id');
+
+									if (fieldName === inputLanguageFieldName) {
+										var boundingBox = titleInputLocalized.get('boundingBox');
+
+										boundingBox.removeClass('has-error');
+									}
+								}
+							)
+						);
+
+						formValidator.eventHandles = validatorEventHandles;
+
+						form.addRule(inputLanguageFieldName, 'required', Liferay.Language.get('this-field-is-required'));
+					},
+
 					_bindUI: function() {
 						var instance = this;
 
@@ -147,6 +225,14 @@ AUI.add(
 						if (editStructure) {
 							eventHandles.push(
 								editStructure.on(STR_CLICK, instance._editStructure, instance)
+							);
+						}
+
+						var publishButton = instance.get(STR_PUBLISH_BUTTON);
+
+						if (publishButton) {
+							eventHandles.push(
+								publishButton.before(STR_CLICK, instance._beforePublishButtonClick, instance)
 							);
 						}
 
@@ -322,6 +408,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'liferay-portlet-base']
+		requires: ['aui-base', 'liferay-form', 'liferay-portlet-base']
 	}
 );

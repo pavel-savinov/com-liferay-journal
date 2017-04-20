@@ -188,6 +188,7 @@ if (!searchRestriction) {
 			editStructure: '#<portlet:namespace />editDDMStructure',
 			editTemplate: '#<portlet:namespace />editDDMTemplate',
 			namespace: '<portlet:namespace />',
+			publishButton: '#<portlet:namespace/>publishButton',
 			selectStructure: '#<portlet:namespace />selectStructure',
 			selectTemplate: '#<portlet:namespace />selectTemplate',
 			'strings.draft': '<liferay-ui:message key="draft" />',
