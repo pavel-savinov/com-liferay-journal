@@ -364,9 +364,7 @@ public class JournalArticleLocalServiceImpl
 			articleId = String.valueOf(counterLocalService.increment());
 		}
 
-		sanitize(
-			user.getCompanyId(), groupId, userId, classPK, titleMap,
-			descriptionMap);
+		sanitize(user.getCompanyId(), groupId, userId, classPK, descriptionMap);
 
 		validate(
 			user.getCompanyId(), groupId, classNameId, articleId, autoArticleId,
@@ -5388,7 +5386,7 @@ public class JournalArticleLocalServiceImpl
 
 		sanitize(
 			user.getCompanyId(), groupId, userId, article.getClassPK(),
-			titleMap, descriptionMap);
+			descriptionMap);
 
 		validate(
 			user.getCompanyId(), groupId, latestArticle.getClassNameId(),
@@ -7484,13 +7482,11 @@ public class JournalArticleLocalServiceImpl
 
 	protected void sanitize(
 			long companyId, long groupId, long userId, long classPK,
-			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap)
+			Map<Locale, String> descriptionMap)
 		throws PortalException {
 
-		for (Locale locale : titleMap.keySet()) {
-			String title = HtmlUtil.stripHtml(titleMap.get(locale));
-
-			titleMap.put(locale, title);
+		if (descriptionMap == null) {
+			return;
 		}
 
 		for (Locale locale : descriptionMap.keySet()) {
