@@ -81,7 +81,15 @@ else {
 				/>
 			</c:if>
 
-			<c:if test="<%= JournalFolderPermission.contains(permissionChecker, folder, ActionKeys.ADD_FOLDER) %>">
+			<%
+			boolean hasAddFolderPermission = JournalFolderPermission.contains(permissionChecker, folder, ActionKeys.ADD_FOLDER);
+
+			if (folder != null) {
+				hasAddFolderPermission = JournalFolderPermission.contains(permissionChecker, folder, ActionKeys.ADD_SUBFOLDER);
+			}
+			%>
+
+			<c:if test="<%= hasAddFolderPermission %>">
 				<portlet:renderURL var="addFolderURL">
 					<portlet:param name="mvcPath" value="/edit_folder.jsp" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />

@@ -46,9 +46,16 @@ public class JournalFolderServiceImpl extends JournalFolderServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		JournalFolderPermission.check(
-			getPermissionChecker(), groupId, parentFolderId,
-			ActionKeys.ADD_FOLDER);
+		if (parentFolderId > 0) {
+			JournalFolderPermission.check(
+				getPermissionChecker(), groupId, parentFolderId,
+				ActionKeys.ADD_SUBFOLDER);
+		}
+		else {
+			JournalFolderPermission.check(
+				getPermissionChecker(), groupId, parentFolderId,
+				ActionKeys.ADD_FOLDER);
+		}
 
 		return journalFolderLocalService.addFolder(
 			getUserId(), groupId, parentFolderId, name, description,
