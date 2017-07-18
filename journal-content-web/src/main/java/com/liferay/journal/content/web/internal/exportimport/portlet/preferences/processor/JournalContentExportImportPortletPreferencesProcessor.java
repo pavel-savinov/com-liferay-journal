@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -152,7 +153,18 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 		if (article == null) {
 			article = _journalArticleLocalService.fetchLatestArticle(
-				articleGroupId, articleId, WorkflowConstants.STATUS_EXPIRED);
+				articleGroupId, articleId, WorkflowConstants.STATUS_ANY);
+		}
+
+		if ((article != null) &&
+			!ArrayUtil.contains(
+				new int[] {
+					WorkflowConstants.STATUS_EXPIRED,
+				WorkflowConstants.STATUS_SCHEDULED
+					},
+				article.getStatus())) {
+
+			article = null;
 		}
 
 		if (article == null) {
