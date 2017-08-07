@@ -14,19 +14,34 @@
 
 package com.liferay.journal.item.selector.web.internal.context;
 
+import com.liferay.document.library.kernel.service.DLAppServiceUtil;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
+import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.item.selector.criterion.JournalItemSelectorCriterion;
 import com.liferay.journal.item.selector.web.internal.JournalItemSelectorView;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
+import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.util.PropsValues;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.ActionRequest;
@@ -58,6 +73,72 @@ public class JournalItemSelectorViewDisplayContext {
 
 	public Folder fetchAttachmentsFolder(long userId, long groupId) {
 		return null;
+	}
+
+	public List getFileEntries(HttpServletRequest request) throws Exception {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (_repository == null) {
+			_repository = PortletFileRepositoryUtil.fetchPortletRepository(
+				themeDisplay.getScopeGroupId(), JournalConstants.SERVICE_NAME);
+		}
+
+		int cur = ParamUtil.getInteger(
+			request, SearchContainer.DEFAULT_CUR_PARAM,
+			SearchContainer.DEFAULT_CUR);
+		int delta = ParamUtil.getInteger(
+			request, SearchContainer.DEFAULT_DELTA_PARAM,
+			SearchContainer.DEFAULT_DELTA);
+
+		int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
+			cur, delta);
+
+		if (_repository == null) {
+			return new ArrayList<>();
+		}
+
+		int start = startAndEnd[0];
+		int end = startAndEnd[1];
+
+		long folderId = ParamUtil.getLong(
+			request, "folderId", _repository.getDlFolderId());
+
+		String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
+		String orderByType = ParamUtil.getString(request, "orderByType", "asc");
+
+		OrderByComparator<FileEntry> orderByComparator =
+			DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType);
+
+		return DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcuts(
+			themeDisplay.getScopeGroupId(), folderId,
+			WorkflowConstants.STATUS_APPROVED,
+			PropsValues.DL_FILE_ENTRY_PREVIEW_IMAGE_MIME_TYPES, false, start,
+			end, orderByComparator);
+	}
+
+	public int getFileEntriesCount(HttpServletRequest request)
+		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (_repository == null) {
+			_repository = PortletFileRepositoryUtil.fetchPortletRepository(
+				themeDisplay.getScopeGroupId(), JournalConstants.SERVICE_NAME);
+		}
+
+		if (_repository == null) {
+			return 0;
+		}
+
+		long folderId = ParamUtil.getLong(
+			request, "folderId", _repository.getDlFolderId());
+
+		return DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(
+			themeDisplay.getScopeGroupId(), folderId,
+			WorkflowConstants.STATUS_APPROVED,
+			PropsValues.DL_FILE_ENTRY_PREVIEW_IMAGE_MIME_TYPES, false);
 	}
 
 	public String getItemSelectedEventName() {
@@ -123,6 +204,7 @@ public class JournalItemSelectorViewDisplayContext {
 	private final JournalItemSelectorCriterion _journalItemSelectorCriterion;
 	private final JournalItemSelectorView _journalItemSelectorView;
 	private final PortletURL _portletURL;
+	private Repository _repository;
 	private final boolean _search;
 
 }

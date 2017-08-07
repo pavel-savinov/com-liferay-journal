@@ -21,18 +21,9 @@ taglib uri="http://liferay.com/tld/item-selector" prefix="liferay-item-selector"
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 
 <%@ page import="com.liferay.document.library.display.context.DLMimeTypeDisplayContext" %><%@
-page import="com.liferay.document.library.kernel.util.DLUtil" %><%@
 page import="com.liferay.journal.item.selector.web.internal.JournalItemSelectorWebKeys" %><%@
 page import="com.liferay.journal.item.selector.web.internal.context.JournalItemSelectorViewDisplayContext" %><%@
-page import="com.liferay.journal.model.JournalArticle" %><%@
-page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
-page import="com.liferay.portal.kernel.dao.search.SearchPaginationUtil" %><%@
-page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
-page import="com.liferay.portal.kernel.repository.model.FileEntry" %><%@
-page import="com.liferay.portal.kernel.util.OrderByComparator" %><%@
-page import="com.liferay.portal.kernel.util.ParamUtil" %>
-
-<%@ page import="java.util.List" %>
+page import="com.liferay.portal.kernel.language.LanguageUtil" %>
 
 <liferay-frontend:defineObjects />
 
