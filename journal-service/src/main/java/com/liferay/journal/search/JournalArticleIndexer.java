@@ -753,7 +753,7 @@ public class JournalArticleIndexer
 				LocaleUtil.toLanguageId(snippetLocale), 1, portletRequestModel,
 				themeDisplay);
 
-			content = articleDisplay.getDescription();
+			content = HtmlUtil.stripHtml(articleDisplay.getDescription());
 
 			content = HtmlUtil.replaceNewLine(content);
 
