@@ -60,6 +60,9 @@ public class JournalArticleFinderImpl
 	public static final String COUNT_BY_G_F =
 		JournalArticleFinder.class.getName() + ".countByG_F";
 
+	public static final String COUNT_BY_G_F_K =
+		JournalArticleFinder.class.getName() + ".countByG_F_K";
+
 	public static final String COUNT_BY_G_C_S =
 		JournalArticleFinder.class.getName() + ".countByG_C_S";
 
@@ -87,6 +90,9 @@ public class JournalArticleFinderImpl
 
 	public static final String FIND_BY_G_F =
 		JournalArticleFinder.class.getName() + ".findByG_F";
+
+	public static final String FIND_BY_G_F_K =
+		JournalArticleFinder.class.getName() + ".findByG_F_K";
 
 	public static final String FIND_BY_G_C_S =
 		JournalArticleFinder.class.getName() + ".findByG_C_S";
@@ -143,7 +149,7 @@ public class JournalArticleFinderImpl
 		long groupId, List<Long> folderIds,
 		QueryDefinition<JournalArticle> queryDefinition) {
 
-		return doCountByG_F(groupId, folderIds, queryDefinition, false);
+		return doCountByG_F_K(groupId, folderIds, null, queryDefinition, false);
 	}
 
 	@Override
@@ -266,7 +272,16 @@ public class JournalArticleFinderImpl
 		long groupId, List<Long> folderIds,
 		QueryDefinition<JournalArticle> queryDefinition) {
 
-		return doCountByG_F(groupId, folderIds, queryDefinition, true);
+		return doCountByG_F_K(groupId, folderIds, null, queryDefinition, true);
+	}
+
+	@Override
+	public int filterCountByG_F_K(
+		long groupId, List<Long> folderIds, String keywords,
+		QueryDefinition<JournalArticle> queryDefinition) {
+
+		return doCountByG_F_K(
+			groupId, folderIds, keywords, queryDefinition, true);
 	}
 
 	@Override
@@ -390,7 +405,16 @@ public class JournalArticleFinderImpl
 		long groupId, List<Long> folderIds,
 		QueryDefinition<JournalArticle> queryDefinition) {
 
-		return doFindByG_F(groupId, folderIds, queryDefinition, true);
+		return doFindByG_F_K(groupId, folderIds, null, queryDefinition, true);
+	}
+
+	@Override
+	public List<JournalArticle> filterFindByG_F_K(
+		long groupId, List<Long> folderIds, String keywords,
+		QueryDefinition<JournalArticle> queryDefinition) {
+
+		return doFindByG_F_K(
+			groupId, folderIds, keywords, queryDefinition, true);
 	}
 
 	@Override
@@ -696,7 +720,7 @@ public class JournalArticleFinderImpl
 		long groupId, List<Long> folderIds,
 		QueryDefinition<JournalArticle> queryDefinition) {
 
-		return doFindByG_F(groupId, folderIds, queryDefinition, false);
+		return doFindByG_F_K(groupId, folderIds, null, queryDefinition, false);
 	}
 
 	@Override
@@ -787,8 +811,8 @@ public class JournalArticleFinderImpl
 			queryDefinition, false);
 	}
 
-	protected int doCountByG_F(
-		long groupId, List<Long> folderIds,
+	protected int doCountByG_F_K(
+		long groupId, List<Long> folderIds, String keywords,
 		QueryDefinition<JournalArticle> queryDefinition,
 		boolean inlineSQLHelper) {
 
@@ -797,8 +821,14 @@ public class JournalArticleFinderImpl
 		try {
 			session = openSession();
 
+			String query = COUNT_BY_G_F;
+
+			if (Validator.isNotNull(keywords)) {
+				query = COUNT_BY_G_F_K;
+			}
+
 			String sql = CustomSQLUtil.get(
-				getClass(), COUNT_BY_G_F, queryDefinition, "JournalArticle");
+				getClass(), query, queryDefinition, "JournalArticle");
 
 			sql = replaceStatusJoin(sql, queryDefinition);
 
@@ -808,9 +838,41 @@ public class JournalArticleFinderImpl
 					"JournalArticle.resourcePrimKey", groupId);
 			}
 
+			String[] titles = CustomSQLUtil.keywords(keywords, true);
+			String[] userNames = CustomSQLUtil.keywords(keywords, true);
+			String[] descriptions = CustomSQLUtil.keywords(keywords, false);
+			String[] contents = CustomSQLUtil.keywords(keywords, false);
+
+			if (Validator.isNotNull(keywords)) {
+				titles = CustomSQLUtil.keywords(keywords, true);
+				userNames = CustomSQLUtil.keywords(keywords, true);
+				descriptions = CustomSQLUtil.keywords(keywords, false);
+				contents = CustomSQLUtil.keywords(keywords, false);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticleLocalization.title)",
+					StringPool.LIKE, false, titles);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticleLocalization.description",
+					StringPool.LIKE, false, descriptions);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticle.content", StringPool.LIKE, false,
+					contents);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticle.userName)", StringPool.LIKE,
+					true, userNames);
+
+				sql = CustomSQLUtil.replaceAndOperator(sql, false);
+			}
+
 			sql = StringUtil.replace(
 				sql, "[$FOLDER_ID$]",
-				getFolderIds(folderIds, JournalArticleImpl.TABLE_NAME));
+				getFolderIds(
+					folderIds, JournalArticleImpl.TABLE_NAME,
+					Validator.isNotNull(keywords)));
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -819,6 +881,14 @@ public class JournalArticleFinderImpl
 			QueryPos qPos = QueryPos.getInstance(q);
 
 			qPos.add(groupId);
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(descriptions, 2);
+				qPos.add(contents, 2);
+				qPos.add(userNames, 2);
+			}
+
 			qPos.add(queryDefinition.getStatus());
 
 			for (int i = 0; i < folderIds.size(); i++) {
@@ -1141,8 +1211,8 @@ public class JournalArticleFinderImpl
 		}
 	}
 
-	protected List<JournalArticle> doFindByG_F(
-		long groupId, List<Long> folderIds,
+	protected List<JournalArticle> doFindByG_F_K(
+		long groupId, List<Long> folderIds, String keywords,
 		QueryDefinition<JournalArticle> queryDefinition,
 		boolean inlineSQLHelper) {
 
@@ -1151,10 +1221,46 @@ public class JournalArticleFinderImpl
 		try {
 			session = openSession();
 
+			String query = FIND_BY_G_F;
+
+			if (Validator.isNotNull(keywords)) {
+				query = FIND_BY_G_F_K;
+			}
+
 			String sql = CustomSQLUtil.get(
-				getClass(), FIND_BY_G_F, queryDefinition, "JournalArticle");
+				getClass(), query, queryDefinition, "JournalArticle");
 
 			sql = replaceStatusJoin(sql, queryDefinition);
+
+			String[] titles = CustomSQLUtil.keywords(keywords, true);
+			String[] userNames = CustomSQLUtil.keywords(keywords, true);
+			String[] descriptions = CustomSQLUtil.keywords(keywords, false);
+			String[] contents = CustomSQLUtil.keywords(keywords, false);
+
+			if (Validator.isNotNull(keywords)) {
+				titles = CustomSQLUtil.keywords(keywords, true);
+				userNames = CustomSQLUtil.keywords(keywords, true);
+				descriptions = CustomSQLUtil.keywords(keywords, false);
+				contents = CustomSQLUtil.keywords(keywords, false);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticleLocalization.title)",
+					StringPool.LIKE, false, titles);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticleLocalization.description",
+					StringPool.LIKE, false, descriptions);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticle.content", StringPool.LIKE, false,
+					contents);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticle.userName)", StringPool.LIKE,
+					true, userNames);
+
+				sql = CustomSQLUtil.replaceAndOperator(sql, false);
+			}
 
 			sql = CustomSQLUtil.replaceOrderBy(
 				sql, queryDefinition.getOrderByComparator());
@@ -1167,7 +1273,9 @@ public class JournalArticleFinderImpl
 
 			sql = StringUtil.replace(
 				sql, "[$FOLDER_ID$]",
-				getFolderIds(folderIds, JournalArticleImpl.TABLE_NAME));
+				getFolderIds(
+					folderIds, JournalArticleImpl.TABLE_NAME,
+					Validator.isNotNull(keywords)));
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -1177,6 +1285,14 @@ public class JournalArticleFinderImpl
 			QueryPos qPos = QueryPos.getInstance(q);
 
 			qPos.add(groupId);
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(descriptions, 2);
+				qPos.add(contents, 2);
+				qPos.add(userNames, 2);
+			}
+
 			qPos.add(queryDefinition.getStatus());
 
 			for (int i = 0; i < folderIds.size(); i++) {
@@ -1515,11 +1631,21 @@ public class JournalArticleFinderImpl
 	}
 
 	protected String getFolderIds(List<Long> folderIds, String tableName) {
+		return getFolderIds(folderIds, tableName, false);
+	}
+
+	protected String getFolderIds(
+		List<Long> folderIds, String tableName, boolean andOperator) {
+
 		if (folderIds.isEmpty()) {
 			return StringPool.BLANK;
 		}
 
 		StringBundler sb = new StringBundler(folderIds.size() * 3 + 1);
+
+		if (andOperator) {
+			sb.append(" AND ");
+		}
 
 		sb.append(StringPool.OPEN_PARENTHESIS);
 
