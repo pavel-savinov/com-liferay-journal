@@ -20,6 +20,41 @@
 				(tempJournalArticle.id_ IS NULL)
 		]]>
 	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalArticleFinder.countByG_F_K">
+		<![CDATA[
+			SELECT
+				COUNT(JournalArticle.articleId) AS COUNT_VALUE
+			FROM
+				JournalArticle
+			LEFT JOIN
+				JournalArticle tempJournalArticle ON
+					[$STATUS_JOIN$] AND
+					(JournalArticle.groupId = tempJournalArticle.groupId) AND
+					(JournalArticle.articleId = tempJournalArticle.articleId) AND
+					(JournalArticle.version < tempJournalArticle.version)
+			LEFT JOIN
+				(SELECT
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				FROM
+					JournalArticleLocalization
+				GROUP BY
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				) JournalArticleLocalization
+				ON
+				(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
+				(JournalArticle.id_ = JournalArticleLocalization.articlePK)
+			WHERE
+				(JournalArticle.groupId = ?) AND
+				((LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (JournalArticle.content LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (LOWER(JournalArticle.userName) LIKE ? [$AND_OR_NULL_CHECK$])) AND
+				[$STATUS$]
+				[$FOLDER_ID$]
+		]]>
+	</sql>
 	<sql id="com.liferay.journal.service.persistence.JournalArticleFinder.countByG_C_S">
 		<![CDATA[
 			SELECT
@@ -191,6 +226,43 @@
 				([$STATUS$]) AND
 				[$FOLDER_ID$] AND
 				(tempJournalArticle.id_ IS NULL)
+			ORDER BY
+				JournalArticle.id_ ASC
+		]]>
+	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalArticleFinder.findByG_F_K">
+		<![CDATA[
+			SELECT
+				JournalArticle.*
+			FROM
+				JournalArticle
+			LEFT JOIN
+				JournalArticle tempJournalArticle ON
+					[$STATUS_JOIN$] AND
+					(JournalArticle.groupId = tempJournalArticle.groupId) AND
+					(JournalArticle.articleId = tempJournalArticle.articleId) AND
+					(JournalArticle.version < tempJournalArticle.version)
+			LEFT JOIN
+				(SELECT
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				FROM
+					JournalArticleLocalization
+				GROUP BY
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				) JournalArticleLocalization
+				ON
+					(JournalArticle.companyId = JournalArticleLocalization.companyId) AND
+					(JournalArticle.id_ = JournalArticleLocalization.articlePK)
+			WHERE
+				(JournalArticle.groupId = ?) AND
+				((LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (JournalArticle.content LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (LOWER(JournalArticle.userName) LIKE ? [$AND_OR_NULL_CHECK$])) AND
+				([$STATUS$])
+				[$FOLDER_ID$]
 			ORDER BY
 				JournalArticle.id_ ASC
 		]]>
