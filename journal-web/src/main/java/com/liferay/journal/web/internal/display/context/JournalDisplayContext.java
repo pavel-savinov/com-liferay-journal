@@ -965,22 +965,45 @@ public class JournalDisplayContext {
 				articleSearchContainer.setResults(results);
 			}
 			else {
-				int total = JournalArticleServiceUtil.searchCount(
-					themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(),
-					folderIds, JournalArticleConstants.CLASSNAME_ID_DEFAULT,
-					getKeywords(), -1.0, getDDMStructureKey(),
-					getDDMTemplateKey(), null, null, getStatus(), null);
+				int total =
+					JournalFolderServiceUtil.searchFoldersAndArticlesCount(
+						themeDisplay.getScopeGroupId(), -1, getStatus(),
+						getKeywords(), showVersions);
 
 				articleSearchContainer.setTotal(total);
 
-				List results = JournalArticleServiceUtil.search(
-					themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(),
-					folderIds, JournalArticleConstants.CLASSNAME_ID_DEFAULT,
-					getKeywords(), -1.0, getDDMStructureKey(),
-					getDDMTemplateKey(), null, null, getStatus(), null,
-					articleSearchContainer.getStart(),
-					articleSearchContainer.getEnd(),
-					articleSearchContainer.getOrderByComparator());
+				OrderByComparator<Object> folderOrderByComparator = null;
+
+				boolean orderByAsc = false;
+
+				if (Objects.equals(getOrderByType(), "asc")) {
+					orderByAsc = true;
+				}
+
+				if (Objects.equals(getOrderByCol(), "display-date")) {
+					folderOrderByComparator =
+						new FolderArticleDisplayDateComparator(orderByAsc);
+				}
+				else if (Objects.equals(getOrderByCol(), "id")) {
+					folderOrderByComparator =
+						new FolderArticleArticleIdComparator(orderByAsc);
+				}
+				else if (Objects.equals(getOrderByCol(), "modified-date")) {
+					folderOrderByComparator =
+						new FolderArticleModifiedDateComparator(orderByAsc);
+				}
+				else if (Objects.equals(getOrderByCol(), "title")) {
+					folderOrderByComparator = new FolderArticleTitleComparator(
+						orderByAsc);
+				}
+
+				List results =
+					JournalFolderServiceUtil.searchFoldersAndArticles(
+						themeDisplay.getScopeGroupId(), -1, getStatus(),
+						getKeywords(), showVersions,
+						articleSearchContainer.getStart(),
+						articleSearchContainer.getEnd(),
+						folderOrderByComparator);
 
 				articleSearchContainer.setResults(results);
 			}
