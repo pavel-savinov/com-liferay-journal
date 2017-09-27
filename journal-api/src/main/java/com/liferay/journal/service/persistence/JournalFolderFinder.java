@@ -28,8 +28,16 @@ public interface JournalFolderFinder {
 	public int filterCountF_A_ByG_F(long groupId, long folderId,
 		com.liferay.portal.kernel.dao.orm.QueryDefinition<?> queryDefinition);
 
+	public int filterCountF_A_ByG_F_K(long groupId, long folderId,
+		java.lang.String keywords,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<?> queryDefinition);
+
 	public java.util.List<java.lang.Object> filterFindF_A_ByG_F(long groupId,
 		long folderId,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<?> queryDefinition);
+
+	public java.util.List<java.lang.Object> filterFindF_A_ByG_F_K(
+		long groupId, long folderId, java.lang.String keywords,
 		com.liferay.portal.kernel.dao.orm.QueryDefinition<?> queryDefinition);
 
 	public java.util.List<java.lang.Object> filterFindF_A_ByG_F_L(

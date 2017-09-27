@@ -461,6 +461,22 @@ public class JournalFolderServiceSoap {
 		}
 	}
 
+	public static int searchFoldersAndArticlesCount(long groupId,
+		long folderId, int status, java.lang.String keywords,
+		boolean showVersions) throws RemoteException {
+		try {
+			int returnValue = JournalFolderServiceUtil.searchFoldersAndArticlesCount(groupId,
+					folderId, status, keywords, showVersions);
+
+			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	public static void subscribe(long groupId, long folderId)
 		throws RemoteException {
 		try {

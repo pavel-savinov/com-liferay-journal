@@ -528,6 +528,23 @@ public class JournalFolderLocalServiceUtil {
 			restrictionType, keywords, start, end, obc);
 	}
 
+	public static java.util.List<java.lang.Object> searchFoldersAndArticles(
+		long groupId, long folderId, int status, java.lang.String keywords,
+		boolean showVersions, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		return getService()
+				   .searchFoldersAndArticles(groupId, folderId, status,
+			keywords, showVersions, start, end, obc);
+	}
+
+	public static int searchFoldersAndArticlesCount(long groupId,
+		long folderId, int status, java.lang.String keywords,
+		boolean showVersions) {
+		return getService()
+				   .searchFoldersAndArticlesCount(groupId, folderId, status,
+			keywords, showVersions);
+	}
+
 	/**
 	* @deprecated As of 4.0.0, with no direct replacement
 	*/

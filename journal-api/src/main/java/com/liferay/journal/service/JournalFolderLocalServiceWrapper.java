@@ -593,6 +593,22 @@ public class JournalFolderLocalServiceWrapper
 			groupIds, folderId, restrictionType, keywords, start, end, obc);
 	}
 
+	@Override
+	public java.util.List<java.lang.Object> searchFoldersAndArticles(
+		long groupId, long folderId, int status, java.lang.String keywords,
+		boolean showVersions, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		return _journalFolderLocalService.searchFoldersAndArticles(groupId,
+			folderId, status, keywords, showVersions, start, end, obc);
+	}
+
+	@Override
+	public int searchFoldersAndArticlesCount(long groupId, long folderId,
+		int status, java.lang.String keywords, boolean showVersions) {
+		return _journalFolderLocalService.searchFoldersAndArticlesCount(groupId,
+			folderId, status, keywords, showVersions);
+	}
+
 	/**
 	* @deprecated As of 4.0.0, with no direct replacement
 	*/

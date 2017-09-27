@@ -181,6 +181,15 @@ public interface JournalFolderService extends BaseService {
 		java.lang.String keywords, int start, int end,
 		OrderByComparator<DDMStructure> obc) throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<java.lang.Object> searchFoldersAndArticles(long groupId,
+		long folderId, int status, java.lang.String keywords,
+		boolean showVersions, int start, int end, OrderByComparator<?> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int searchFoldersAndArticlesCount(long groupId, long folderId,
+		int status, java.lang.String keywords, boolean showVersions);
+
 	public void subscribe(long groupId, long folderId)
 		throws PortalException;
 

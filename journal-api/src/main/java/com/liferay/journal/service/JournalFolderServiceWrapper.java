@@ -261,6 +261,22 @@ public class JournalFolderServiceWrapper implements JournalFolderService,
 	}
 
 	@Override
+	public java.util.List<java.lang.Object> searchFoldersAndArticles(
+		long groupId, long folderId, int status, java.lang.String keywords,
+		boolean showVersions, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		return _journalFolderService.searchFoldersAndArticles(groupId,
+			folderId, status, keywords, showVersions, start, end, obc);
+	}
+
+	@Override
+	public int searchFoldersAndArticlesCount(long groupId, long folderId,
+		int status, java.lang.String keywords, boolean showVersions) {
+		return _journalFolderService.searchFoldersAndArticlesCount(groupId,
+			folderId, status, keywords, showVersions);
+	}
+
+	@Override
 	public void subscribe(long groupId, long folderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_journalFolderService.subscribe(groupId, folderId);
