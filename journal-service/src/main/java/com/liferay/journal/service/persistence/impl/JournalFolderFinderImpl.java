@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
@@ -52,11 +53,17 @@ public class JournalFolderFinderImpl
 	public static final String COUNT_A_BY_G_U_F =
 		JournalFolderFinder.class.getName() + ".countA_ByG_U_F";
 
+	public static final String COUNT_A_BY_G_U_F_K =
+		JournalFolderFinder.class.getName() + ".countA_ByG_U_F_K";
+
 	public static final String COUNT_F_BY_G_F =
 		JournalFolderFinder.class.getName() + ".countF_ByG_F";
 
 	public static final String FIND_A_BY_G_U_F =
 		JournalFolderFinder.class.getName() + ".findA_ByG_U_F";
+
+	public static final String FIND_A_BY_G_U_F_K =
+		JournalFolderFinder.class.getName() + ".findA_ByG_U_F_K";
 
 	public static final String FIND_A_BY_G_U_F_L =
 		JournalFolderFinder.class.getName() + ".findA_ByG_U_F_L";
@@ -74,21 +81,42 @@ public class JournalFolderFinderImpl
 	public int countF_A_ByG_F(
 		long groupId, long folderId, QueryDefinition<?> queryDefinition) {
 
-		return doCountF_A_ByG_F(groupId, folderId, queryDefinition, false);
+		return doCountF_A_ByG_F_K(
+			groupId, folderId, null, queryDefinition, false);
 	}
 
 	@Override
 	public int filterCountF_A_ByG_F(
 		long groupId, long folderId, QueryDefinition<?> queryDefinition) {
 
-		return doCountF_A_ByG_F(groupId, folderId, queryDefinition, true);
+		return doCountF_A_ByG_F_K(
+			groupId, folderId, null, queryDefinition, true);
+	}
+
+	@Override
+	public int filterCountF_A_ByG_F_K(
+		long groupId, long folderId, String keywords,
+		QueryDefinition<?> queryDefinition) {
+
+		return doCountF_A_ByG_F_K(
+			groupId, folderId, keywords, queryDefinition, true);
 	}
 
 	@Override
 	public List<Object> filterFindF_A_ByG_F(
 		long groupId, long folderId, QueryDefinition<?> queryDefinition) {
 
-		return doFindF_A_ByG_F(groupId, folderId, queryDefinition, true);
+		return doFindF_A_ByG_F_K(
+			groupId, folderId, null, queryDefinition, true);
+	}
+
+	@Override
+	public List<Object> filterFindF_A_ByG_F_K(
+		long groupId, long folderId, String keywords,
+		QueryDefinition<?> queryDefinition) {
+
+		return doFindF_A_ByG_F_K(
+			groupId, folderId, keywords, queryDefinition, true);
 	}
 
 	@Override
@@ -104,7 +132,8 @@ public class JournalFolderFinderImpl
 	public List<Object> findF_A_ByG_F(
 		long groupId, long folderId, QueryDefinition<?> queryDefinition) {
 
-		return doFindF_A_ByG_F(groupId, folderId, queryDefinition, false);
+		return doFindF_A_ByG_F_K(
+			groupId, folderId, null, queryDefinition, false);
 	}
 
 	@Override
@@ -134,9 +163,9 @@ public class JournalFolderFinderImpl
 		}
 	}
 
-	protected int doCountF_A_ByG_F(
-		long groupId, long folderId, QueryDefinition<?> queryDefinition,
-		boolean inlineSQLHelper) {
+	protected int doCountF_A_ByG_F_K(
+		long groupId, long folderId, String keywords,
+		QueryDefinition<?> queryDefinition, boolean inlineSQLHelper) {
 
 		Session session = null;
 
@@ -145,18 +174,54 @@ public class JournalFolderFinderImpl
 
 			StringBundler sb = new StringBundler(5);
 
+			String articlesQuery = COUNT_A_BY_G_U_F;
+			String foldersQuery = COUNT_F_BY_G_F;
+
+			if (Validator.isNotNull(keywords)) {
+				articlesQuery = COUNT_A_BY_G_U_F_K;
+			}
+
 			sb.append(StringPool.OPEN_PARENTHESIS);
 			sb.append(
 				getFoldersSQL(
-					COUNT_F_BY_G_F, groupId, queryDefinition, inlineSQLHelper));
+					foldersQuery, groupId, queryDefinition, inlineSQLHelper));
 			sb.append(") UNION ALL (");
 			sb.append(
 				getArticlesSQL(
-					COUNT_A_BY_G_U_F, groupId, queryDefinition,
-					inlineSQLHelper));
+					articlesQuery, groupId, queryDefinition, inlineSQLHelper));
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
 			String sql = updateSQL(sb.toString(), folderId);
+
+			String[] titles = CustomSQLUtil.keywords(keywords, true);
+			String[] userNames = CustomSQLUtil.keywords(keywords, true);
+			String[] descriptions = CustomSQLUtil.keywords(keywords, false);
+			String[] contents = CustomSQLUtil.keywords(keywords, false);
+
+			if (Validator.isNotNull(keywords)) {
+				titles = CustomSQLUtil.keywords(keywords, true);
+				userNames = CustomSQLUtil.keywords(keywords, true);
+				descriptions = CustomSQLUtil.keywords(keywords, false);
+				contents = CustomSQLUtil.keywords(keywords, false);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticleLocalization.title)",
+					StringPool.LIKE, false, titles);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticleLocalization.description",
+					StringPool.LIKE, false, descriptions);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "JournalArticle.content", StringPool.LIKE, false,
+					contents);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalArticle.userName)", StringPool.LIKE,
+					true, userNames);
+
+				sql = CustomSQLUtil.replaceAndOperator(sql, false);
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -169,6 +234,13 @@ public class JournalFolderFinderImpl
 
 			if (folderId >= 0) {
 				qPos.add(folderId);
+			}
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(descriptions, 2);
+				qPos.add(contents, 2);
+				qPos.add(userNames, 2);
 			}
 
 			qPos.add(groupId);
@@ -206,9 +278,9 @@ public class JournalFolderFinderImpl
 		}
 	}
 
-	protected List<Object> doFindF_A_ByG_F(
-		long groupId, long folderId, QueryDefinition<?> queryDefinition,
-		boolean inlineSQLHelper) {
+	protected List<Object> doFindF_A_ByG_F_K(
+		long groupId, long folderId, String keywords,
+		QueryDefinition<?> queryDefinition, boolean inlineSQLHelper) {
 
 		Session session = null;
 
@@ -217,21 +289,55 @@ public class JournalFolderFinderImpl
 
 			StringBundler sb = new StringBundler(5);
 
+			String articlesQuery = FIND_A_BY_G_U_F;
+			String foldersQuery = FIND_F_BY_G_F;
+
+			String[] titles = CustomSQLUtil.keywords(keywords, true);
+			String[] userNames = CustomSQLUtil.keywords(keywords, true);
+			String[] descriptions = CustomSQLUtil.keywords(keywords, false);
+			String[] contents = CustomSQLUtil.keywords(keywords, false);
+
+			if (Validator.isNotNull(keywords)) {
+				titles = CustomSQLUtil.keywords(keywords, true);
+				userNames = CustomSQLUtil.keywords(keywords, true);
+				descriptions = CustomSQLUtil.keywords(keywords, false);
+				contents = CustomSQLUtil.keywords(keywords, false);
+
+				articlesQuery = FIND_A_BY_G_U_F_K;
+			}
+
 			sb.append(StringPool.OPEN_PARENTHESIS);
 			sb.append(
 				getFoldersSQL(
-					FIND_F_BY_G_F, groupId, queryDefinition, inlineSQLHelper));
+					foldersQuery, groupId, queryDefinition, inlineSQLHelper));
 			sb.append(") UNION ALL (");
 			sb.append(
 				getArticlesSQL(
-					FIND_A_BY_G_U_F, groupId, queryDefinition,
-					inlineSQLHelper));
+					articlesQuery, groupId, queryDefinition, inlineSQLHelper));
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
 			String sql = updateSQL(sb.toString(), folderId);
 
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "LOWER(JournalArticleLocalization.title)", StringPool.LIKE,
+				false, titles);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "JournalArticleLocalization.description", StringPool.LIKE,
+				false, descriptions);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "JournalArticle.content", StringPool.LIKE, false,
+				contents);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "LOWER(JournalArticle.userName)", StringPool.LIKE, true,
+				userNames);
+
 			sql = CustomSQLUtil.replaceOrderBy(
 				sql, queryDefinition.getOrderByComparator());
+
+			sql = CustomSQLUtil.replaceAndOperator(sql, false);
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -260,6 +366,13 @@ public class JournalFolderFinderImpl
 
 			if (folderId >= 0) {
 				qPos.add(folderId);
+			}
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(descriptions, 2);
+				qPos.add(contents, 2);
+				qPos.add(userNames, 2);
 			}
 
 			List<Object> models = new ArrayList<>();
