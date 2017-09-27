@@ -359,6 +359,35 @@
 				[$ARTICLE_FOLDER_ID$]
 		]]>
 	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.countA_ByG_U_F_K">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT JournalArticle.articleId) AS COUNT_VALUE
+			FROM
+				JournalArticle
+				LEFT JOIN
+				(SELECT
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				FROM
+					JournalArticleLocalization
+				GROUP BY
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				) JournalArticleLocalization
+				ON
+					(JournalArticle.id_ = JournalArticleLocalization.articlePK)
+			WHERE
+				((LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				(JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				(JournalArticle.content LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				(LOWER(JournalArticle.userName) LIKE ? [$AND_OR_NULL_CHECK$])) AND
+				(JournalArticle.groupId = ?) AND
+				(JournalArticle.classNameId = 0) AND
+				([$OWNER_USER_ID$] [$OWNER_USER_ID_AND_OR_CONNECTOR$] ([$STATUS$]))
+				[$ARTICLE_FOLDER_ID$]
+		]]>
+	</sql>
 	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.countF_ByG_F">
 		<![CDATA[
 			SELECT
@@ -393,6 +422,55 @@
 					JournalArticle ON
 						(TEMP_TABLE.resourcePrimKey = JournalArticle.resourcePrimKey) AND
 						(TEMP_TABLE.version = JournalArticle.version)
+		]]>
+	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.findA_ByG_U_F_K">
+		<![CDATA[
+			SELECT
+				DISTINCT JournalArticle.folderId AS modelFolderId, JournalArticle.articleId as articleId, JournalArticle.version AS version, 0 AS modelFolder, JournalArticle.displayDate as displayDate, JournalArticle.modifiedDate as modifiedDate
+			FROM
+				(
+					SELECT
+						JournalArticle.companyId, JournalArticle.resourcePrimKey AS resourcePrimKey, MAX(JournalArticle.version) AS version
+					FROM
+						JournalArticle
+					WHERE
+						(JournalArticle.groupId = ?) AND
+						(JournalArticle.classNameId = 0) AND
+						([$OWNER_USER_ID$] [$OWNER_USER_ID_AND_OR_CONNECTOR$] ([$STATUS$]))
+						[$ARTICLE_FOLDER_ID$]
+					GROUP BY
+						JournalArticle.companyId, JournalArticle.resourcePrimKey, JournalArticle.folderId, JournalArticle.articleId
+				) TEMP_TABLE
+				LEFT JOIN
+				(SELECT
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				FROM
+					JournalArticleLocalization
+				GROUP BY
+					JournalArticleLocalization.companyId, JournalArticleLocalization.articlePK,
+					JournalArticleLocalization.title, JournalArticleLocalization.description
+				) JournalArticleLocalization
+				ON
+					(
+					 (SELECT JournalArticle.id_ from JournalArticle WHERE
+						JournalArticle.resourcePrimKey = TEMP_TABLE.resourcePrimKey AND
+						JournalArticle.version = TEMP_TABLE.version AND
+						JournalArticle.companyId = TEMP_TABLE.companyId
+					 ) = JournalArticleLocalization.articlePK
+					)
+				INNER JOIN
+					JournalArticle ON
+						(TEMP_TABLE.resourcePrimKey = JournalArticle.resourcePrimKey) AND
+						(TEMP_TABLE.version = JournalArticle.version)
+			WHERE
+				(
+					(LOWER(JournalArticleLocalization.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+					(JournalArticleLocalization.description LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+					(JournalArticle.content LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+					(LOWER(JournalArticle.userName) LIKE ? [$AND_OR_NULL_CHECK$])
+				)
 		]]>
 	</sql>
 	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.findA_ByG_U_F_L">
