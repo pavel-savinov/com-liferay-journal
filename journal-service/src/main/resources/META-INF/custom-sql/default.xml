@@ -400,6 +400,20 @@
 				[$FOLDER_PARENT_FOLDER_ID$]
 		]]>
 	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.countF_ByG_F_K">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS COUNT_VALUE
+			FROM
+				JournalFolder
+			WHERE
+				(JournalFolder.groupId = ?) AND
+				((LOWER(JournalFolder.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (LOWER(JournalFolder.userName) LIKE ? [$AND_OR_NULL_CHECK$])) AND
+				([$STATUS$])
+				[$FOLDER_PARENT_FOLDER_ID$]
+		]]>
+	</sql>
 	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.findA_ByG_U_F">
 		<![CDATA[
 			SELECT
@@ -523,6 +537,20 @@
 				JournalFolder
 			WHERE
 				(JournalFolder.groupId = ?) AND
+				([$STATUS$])
+				[$FOLDER_PARENT_FOLDER_ID$]
+		]]>
+	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.findF_ByG_F_K">
+		<![CDATA[
+			SELECT
+				DISTINCT folderId AS modelFolderId, '' AS articleId, 0 AS version, 1 AS modelFolder, JournalFolder.createDate as displayDate, JournalFolder.modifiedDate as modifiedDate
+			FROM
+				JournalFolder
+			WHERE
+				(JournalFolder.groupId = ?) AND
+				((LOWER(JournalFolder.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+				 (LOWER(JournalFolder.userName) LIKE ? [$AND_OR_NULL_CHECK$])) AND
 				([$STATUS$])
 				[$FOLDER_PARENT_FOLDER_ID$]
 		]]>
