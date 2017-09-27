@@ -59,6 +59,9 @@ public class JournalFolderFinderImpl
 	public static final String COUNT_F_BY_G_F =
 		JournalFolderFinder.class.getName() + ".countF_ByG_F";
 
+	public static final String COUNT_F_BY_G_F_K =
+		JournalFolderFinder.class.getName() + ".countF_ByG_F_K";
+
 	public static final String FIND_A_BY_G_U_F =
 		JournalFolderFinder.class.getName() + ".findA_ByG_U_F";
 
@@ -73,6 +76,9 @@ public class JournalFolderFinderImpl
 
 	public static final String FIND_F_BY_G_F =
 		JournalFolderFinder.class.getName() + ".findF_ByG_F";
+
+	public static final String FIND_F_BY_G_F_K =
+		JournalFolderFinder.class.getName() + ".findF_ByG_F_K";
 
 	public static final String FIND_F_BY_G_F_L =
 		JournalFolderFinder.class.getName() + ".findF_ByG_F_L";
@@ -179,6 +185,7 @@ public class JournalFolderFinderImpl
 
 			if (Validator.isNotNull(keywords)) {
 				articlesQuery = COUNT_A_BY_G_U_F_K;
+				foldersQuery = COUNT_F_BY_G_F_K;
 			}
 
 			sb.append(StringPool.OPEN_PARENTHESIS);
@@ -203,6 +210,14 @@ public class JournalFolderFinderImpl
 				userNames = CustomSQLUtil.keywords(keywords, true);
 				descriptions = CustomSQLUtil.keywords(keywords, false);
 				contents = CustomSQLUtil.keywords(keywords, false);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalFolder.name)", StringPool.LIKE, false,
+					titles);
+
+				sql = CustomSQLUtil.replaceKeywords(
+					sql, "LOWER(JournalFolder.userName)", StringPool.LIKE, true,
+					userNames);
 
 				sql = CustomSQLUtil.replaceKeywords(
 					sql, "LOWER(JournalArticleLocalization.title)",
@@ -230,6 +245,12 @@ public class JournalFolderFinderImpl
 			QueryPos qPos = QueryPos.getInstance(q);
 
 			qPos.add(groupId);
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(userNames, 2);
+			}
+
 			qPos.add(queryDefinition.getStatus());
 
 			if (folderId >= 0) {
@@ -304,6 +325,7 @@ public class JournalFolderFinderImpl
 				contents = CustomSQLUtil.keywords(keywords, false);
 
 				articlesQuery = FIND_A_BY_G_U_F_K;
+				foldersQuery = FIND_F_BY_G_F_K;
 			}
 
 			sb.append(StringPool.OPEN_PARENTHESIS);
@@ -317,6 +339,14 @@ public class JournalFolderFinderImpl
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
 			String sql = updateSQL(sb.toString(), folderId);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "LOWER(JournalFolder.name)", StringPool.LIKE, false,
+				titles);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "LOWER(JournalFolder.userName)", StringPool.LIKE, true,
+				userNames);
 
 			sql = CustomSQLUtil.replaceKeywords(
 				sql, "LOWER(JournalArticleLocalization.title)", StringPool.LIKE,
@@ -349,6 +379,12 @@ public class JournalFolderFinderImpl
 			QueryPos qPos = QueryPos.getInstance(q);
 
 			qPos.add(groupId);
+
+			if (Validator.isNotNull(keywords)) {
+				qPos.add(titles, 2);
+				qPos.add(userNames, 2);
+			}
+
 			qPos.add(queryDefinition.getStatus());
 
 			if (folderId >= 0) {
