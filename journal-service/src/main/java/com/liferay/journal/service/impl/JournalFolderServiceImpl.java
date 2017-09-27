@@ -377,6 +377,24 @@ public class JournalFolderServiceImpl extends JournalFolderServiceBaseImpl {
 	}
 
 	@Override
+	public List<Object> searchFoldersAndArticles(
+		long groupId, long folderId, int status, String keywords,
+		boolean showVersions, int start, int end, OrderByComparator<?> obc) {
+
+		return journalFolderLocalService.searchFoldersAndArticles(
+			groupId, folderId, status, keywords, showVersions, start, end, obc);
+	}
+
+	@Override
+	public int searchFoldersAndArticlesCount(
+		long groupId, long folderId, int status, String keywords,
+		boolean showVersions) {
+
+		return journalFolderLocalService.searchFoldersAndArticlesCount(
+			groupId, folderId, status, keywords, showVersions);
+	}
+
+	@Override
 	public void subscribe(long groupId, long folderId) throws PortalException {
 		JournalFolderPermission.check(
 			getPermissionChecker(), groupId, folderId, ActionKeys.SUBSCRIBE);

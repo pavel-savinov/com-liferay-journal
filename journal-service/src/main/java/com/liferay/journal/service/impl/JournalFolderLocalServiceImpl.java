@@ -800,6 +800,61 @@ public class JournalFolderLocalServiceImpl
 			keywords, WorkflowConstants.STATUS_ANY, start, end, obc);
 	}
 
+	@Override
+	public List<Object> searchFoldersAndArticles(
+		long groupId, long folderId, int status, String keywords,
+		boolean showVersions, int start, int end, OrderByComparator<?> obc) {
+
+		QueryDefinition<?> queryDefinition = new QueryDefinition<>(
+			status, start, end, (OrderByComparator<Object>)obc);
+
+		if (showVersions) {
+			QueryDefinition<JournalArticle> articleQueryDefinition =
+				new QueryDefinition<>(status, 0, false);
+
+			List<Long> folderIds = new ArrayList<>();
+
+			if (folderId > 0) {
+				folderIds.add(folderId);
+			}
+
+			List<JournalArticle> articles =
+				journalArticleFinder.filterFindByG_F_K(
+					groupId, folderIds, keywords, articleQueryDefinition);
+
+			return new ArrayList<>(articles);
+		}
+
+		return journalFolderFinder.filterFindF_A_ByG_F_K(
+			groupId, folderId, keywords, queryDefinition);
+	}
+
+	@Override
+	public int searchFoldersAndArticlesCount(
+		long groupId, long folderId, int status, String keywords,
+		boolean showVersions) {
+
+		QueryDefinition<?> queryDefinition = new QueryDefinition<>(
+			status, 0, false);
+
+		if (showVersions) {
+			QueryDefinition<JournalArticle> articleQueryDefinition =
+				new QueryDefinition<>(status, 0, false);
+
+			List<Long> folderIds = new ArrayList<>();
+
+			if (folderId > 0) {
+				folderIds.add(folderId);
+			}
+
+			return journalArticleFinder.filterCountByG_F_K(
+				groupId, folderIds, keywords, articleQueryDefinition);
+		}
+
+		return journalFolderFinder.filterCountF_A_ByG_F_K(
+			groupId, folderId, keywords, queryDefinition);
+	}
+
 	/**
 	 * @deprecated As of 4.0.0, with no direct replacement
 	 */
