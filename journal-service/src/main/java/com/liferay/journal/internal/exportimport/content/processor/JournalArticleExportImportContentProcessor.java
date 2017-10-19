@@ -120,6 +120,33 @@ public class JournalArticleExportImportContentProcessor
 			String content)
 		throws Exception {
 
+		JournalArticle article = (JournalArticle)stagedModel;
+
+		DDMStructure ddmStructure = article.getDDMStructure();
+
+		Fields fields = _getDDMStructureFields(ddmStructure, content);
+
+		if (fields != null) {
+			DDMFormValues ddmFormValues = _journalConverter.getDDMFormValues(
+				ddmStructure, fields);
+
+			DDMFormValuesTransformer ddmFormValuesTransformer =
+				new DDMFormValuesTransformer(ddmFormValues);
+
+			ImageImportDDMFormFieldValueTransformer
+				imageImportDDMFormFieldValueTransformer =
+					new ImageImportDDMFormFieldValueTransformer(
+						content, _dlAppService, portletDataContext,
+						stagedModel);
+
+			ddmFormValuesTransformer.addTransformer(
+				imageImportDDMFormFieldValueTransformer);
+
+			ddmFormValuesTransformer.transform();
+
+			content = imageImportDDMFormFieldValueTransformer.getContent();
+		}
+
 		content = replaceImportJournalArticleReferences(
 			portletDataContext, stagedModel, content);
 
