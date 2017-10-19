@@ -3692,9 +3692,16 @@ public class JournalArticleLocalServiceImpl
 		List<JournalArticle> articles = journalArticlePersistence.findByG_A(
 			groupId, articleId);
 
+		String treePath = null;
+
 		for (JournalArticle article : articles) {
 			article.setFolderId(newFolderId);
-			article.setTreePath(article.buildTreePath());
+
+			if (treePath == null) {
+				treePath = article.buildTreePath();
+			}
+
+			article.setTreePath(treePath);
 
 			journalArticlePersistence.update(article);
 		}
