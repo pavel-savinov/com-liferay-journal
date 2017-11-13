@@ -820,6 +820,14 @@ public class JournalArticleStagedModelDataHandler
 							importedArticle);
 					}
 				}
+
+				if ((existingArticle != null) &&
+					(existingArticle.getFolderId() != folderId)) {
+
+					_journalArticleLocalService.moveArticle(
+						existingArticle.getGroupId(),
+						existingArticle.getArticleId(), folderId, null);
+				}
 			}
 			else {
 				importedArticle = _journalArticleLocalService.addArticle(
