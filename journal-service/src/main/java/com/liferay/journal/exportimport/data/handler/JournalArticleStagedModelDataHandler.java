@@ -820,14 +820,6 @@ public class JournalArticleStagedModelDataHandler
 							importedArticle);
 					}
 				}
-
-				if ((existingArticle != null) &&
-					(existingArticle.getFolderId() != folderId)) {
-
-					_journalArticleLocalService.moveArticle(
-						existingArticle.getGroupId(),
-						existingArticle.getArticleId(), folderId, null);
-				}
 			}
 			else {
 				importedArticle = _journalArticleLocalService.addArticle(
@@ -851,10 +843,8 @@ public class JournalArticleStagedModelDataHandler
 				portletDataContext.getBooleanParameter(
 					"journal", "version-history");
 
-			if (!exportVersionHistory &&
-				isExpireAllArticleVersions(importedArticle.getCompanyId())) {
-
-				setArticlesExpirationDate(importedArticle);
+			if (!exportVersionHistory) {
+				updateArticleVersions(importedArticle);
 			}
 
 			portletDataContext.importClassedModel(article, importedArticle);
@@ -1004,29 +994,6 @@ public class JournalArticleStagedModelDataHandler
 		return false;
 	}
 
-	protected void setArticlesExpirationDate(JournalArticle article) {
-		if (!article.isApproved() || (article.getExpirationDate() == null)) {
-			return;
-		}
-
-		List<JournalArticle> articles = _journalArticleLocalService.getArticles(
-			article.getGroupId(), article.getArticleId());
-
-		Date expirationDate = article.getExpirationDate();
-
-		for (JournalArticle curArticle : articles) {
-			if (Objects.equals(
-					curArticle.getExpirationDate(), expirationDate)) {
-
-				continue;
-			}
-
-			curArticle.setExpirationDate(article.getExpirationDate());
-
-			_journalArticleLocalService.updateJournalArticle(curArticle);
-		}
-	}
-
 	@Reference(unbind = "-")
 	protected void setConfigurationProvider(
 		ConfigurationProvider configurationProvider) {
@@ -1090,6 +1057,42 @@ public class JournalArticleStagedModelDataHandler
 	@Reference(unbind = "-")
 	protected void setUserLocalService(UserLocalService userLocalService) {
 		_userLocalService = userLocalService;
+	}
+
+	protected void updateArticleVersions(JournalArticle article)
+		throws PortalException {
+
+		boolean expireAllArticleVersions = isExpireAllArticleVersions(
+			article.getCompanyId());
+
+		List<JournalArticle> articles = _journalArticleLocalService.getArticles(
+			article.getGroupId(), article.getArticleId());
+
+		for (JournalArticle curArticle : articles) {
+			boolean update = false;
+
+			if (article.isApproved() && (article.getExpirationDate() != null) &&
+				expireAllArticleVersions &&
+				!Objects.equals(
+					curArticle.getExpirationDate(),
+					article.getExpirationDate())) {
+
+				curArticle.setExpirationDate(article.getExpirationDate());
+
+				update = true;
+			}
+
+			if (curArticle.getFolderId() != article.getFolderId()) {
+				curArticle.setFolderId(article.getFolderId());
+				curArticle.setTreePath(article.getTreePath());
+
+				update = true;
+			}
+
+			if (update) {
+				_journalArticleLocalService.updateJournalArticle(curArticle);
+			}
+		}
 	}
 
 	/**
