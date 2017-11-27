@@ -22,6 +22,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
@@ -843,7 +844,9 @@ public class JournalArticleStagedModelDataHandler
 				portletDataContext.getBooleanParameter(
 					"journal", "version-history");
 
-			if (!exportVersionHistory) {
+			if (!ExportImportThreadLocal.isStagingInProcess() ||
+				!exportVersionHistory) {
+
 				updateArticleVersions(importedArticle);
 			}
 
