@@ -79,6 +79,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.portlet.PortletMode;
 import javax.portlet.PortletPreferences;
@@ -311,24 +312,31 @@ public class JournalContentDisplayContext {
 			return _ddmTemplateKey;
 		}
 
-		_ddmTemplateKey = ParamUtil.getString(
+		String ddmTemplateKey = ParamUtil.getString(
 			_portletRequest, "ddmTemplateKey");
 
-		if (Validator.isNotNull(_ddmTemplateKey)) {
-			return _ddmTemplateKey;
-		}
+		_ddmTemplateKey =
+			_journalContentPortletInstanceConfiguration.ddmTemplateKey();
 
-		long articleResourcePrimKey = ParamUtil.getLong(
-			_portletRequest, "articleResourcePrimKey");
+		if (Validator.isNotNull(ddmTemplateKey)) {
+			_ddmTemplateKey = ddmTemplateKey;
+		}
 
 		JournalArticle article = getArticle();
 
-		if ((article != null) && (articleResourcePrimKey > 0)) {
-			_ddmTemplateKey = article.getDDMTemplateKey();
+		if (article == null) {
+			return _ddmTemplateKey;
 		}
-		else {
-			_ddmTemplateKey =
-				_journalContentPortletInstanceConfiguration.ddmTemplateKey();
+
+		List<DDMTemplate> ddmTemplates = getDDMTemplates();
+
+		Stream<DDMTemplate> stream = ddmTemplates.stream();
+
+		boolean structureTemplate = stream.anyMatch(
+			template -> _ddmTemplateKey.equals(template.getTemplateKey()));
+
+		if (!structureTemplate) {
+			_ddmTemplateKey = article.getDDMTemplateKey();
 		}
 
 		return _ddmTemplateKey;
