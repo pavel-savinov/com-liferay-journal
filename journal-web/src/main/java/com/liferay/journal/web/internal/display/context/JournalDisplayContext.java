@@ -353,6 +353,40 @@ public class JournalDisplayContext {
 		return ddmStructure.getPrimaryKey();
 	}
 
+	public List<DDMStructure> getDDMStructures(Integer restrictionType)
+		throws PortalException {
+
+		if (_ddmStructures != null) {
+			return _ddmStructures;
+		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (restrictionType == null) {
+			restrictionType = getRestrictionType();
+		}
+
+		_ddmStructures = JournalFolderServiceUtil.getDDMStructures(
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(
+				themeDisplay.getScopeGroupId()),
+			getFolderId(), restrictionType);
+
+		Locale locale = themeDisplay.getLocale();
+
+		if (isStructuresSortedByName()) {
+			_ddmStructures.sort(
+				(ddmStructure1, ddmStructure2) -> {
+					String name1 = ddmStructure1.getName(locale);
+					String name2 = ddmStructure2.getName(locale);
+
+					return name1.compareTo(name2);
+				});
+		}
+
+		return _ddmStructures;
+	}
+
 	public String getDDMTemplateKey() {
 		if (_ddmTemplateKey != null) {
 			return _ddmTemplateKey;
@@ -1224,6 +1258,18 @@ public class JournalDisplayContext {
 		return false;
 	}
 
+	public boolean isStructuresSortedByName() {
+		if (_journalServiceConfiguration != null) {
+			return _journalServiceConfiguration.structuresSortedByName();
+		}
+
+		_journalServiceConfiguration =
+			(JournalServiceConfiguration)_request.getAttribute(
+				JournalServiceConfiguration.class.getName());
+
+		return _journalServiceConfiguration.structuresSortedByName();
+	}
+
 	protected SearchContext buildSearchContext(
 		long companyId, long groupId, List<java.lang.Long> folderIds,
 		long classNameId, String ddmStructureKey, String ddmTemplateKey,
@@ -1369,11 +1415,13 @@ public class JournalDisplayContext {
 	private DDMFormValues _ddmFormValues;
 	private String _ddmStructureKey;
 	private String _ddmStructureName;
+	private List<DDMStructure> _ddmStructures;
 	private String _ddmTemplateKey;
 	private String _displayStyle;
 	private String[] _displayViews;
 	private JournalFolder _folder;
 	private Long _folderId;
+	private JournalServiceConfiguration _journalServiceConfiguration;
 	private String _keywords;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
