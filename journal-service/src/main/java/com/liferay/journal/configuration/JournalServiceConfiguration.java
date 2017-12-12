@@ -131,6 +131,13 @@ public interface JournalServiceConfiguration {
 	public boolean versionHistoryByDefaultEnabled();
 
 	@Meta.AD(
+		deflt = "false",
+		description = "journal-browse-by-structures-sorted-by-name",
+		name = "journal-browse-by-structures-sorted-by-name", required = false
+	)
+	public boolean structuresSortedByName();
+
+	@Meta.AD(
 		deflt = "false", description = "sync-content-search-on-startup-help",
 		name = "sync-content-search-on-startup", required = false
 	)
